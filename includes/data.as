@@ -98,7 +98,7 @@ function loadSaveDisplay(slot:String, slotName:String):String
 		holding += saveFile.data.short;
 		holding += "</b> - <i>" + saveFile.data.notes + "</i>\n";
 		holding += "	<b>Days:</b> " + saveFile.data.days + "  <b>Gender:</b> ";
-		holding += saveFile.data.characters[0].mfn("M","F","A");
+		holding += saveFile.data.chars["PC"].mfn("M","F","A");
 		holding += "  <b>Location:</b> " + saveFile.data.location;
 		holding += "\n";
 		return holding;
@@ -133,20 +133,26 @@ function saveGame(slot:String):void
 	//Set a single variable that tells us if this save exists
 	saveFile.data.exists = true;
 	
-	saveFile.data.characters = new Array();
-	saveFile.data.short = characters[0].short;
+	saveFile.data.chars = new Object();
+	saveFile.data.short = chars["PC"].short;
 	
 	
+	saveFile.data.foes = new Array();
 	
-	for(var x:int = 0; x < characters.length; x++) {
-		if(characters[x].short != "uncreated") {
-			saveFile.data.characters[x] = clone(characters[x]);
+	saveFile.data.chars = clone(this.chars); // Why iterate when it can do it for you!
+	saveFile.data.foes = clone(this.foes);
+	
+	/*
+	for(var x:int = 0; x < chars.length; x++) {
+		if(chars[x].short != "uncreated") {
+			saveFile.data.chars[x] = clone(chars[x]);
 		}
 	}
 	saveFile.data.foes = new Array();
 	for(x = 0; x < foes.length; x++) {
 		saveFile.data.foes[x] = clone(foes[x]);
 	}
+	*/
 	
 	//Save flags
 	saveFile.data.flags = cloneDict(flags);
@@ -186,30 +192,20 @@ function loadGame(slot:String):void
 	if(saveFile.data.exists) {
 		this.userInterface.currentPCNotes = saveFile.data.notes;
 		//Clear character array and load the defaults!
-		characters = new Array();
+		
 
 		// you don't need to clear this if it's overwritten again in a bit, you know.
-		this.setupCharacters();
+		this.chars = new Object();
 		this.initializeNPCs();
+		this.foes = new Array();
+
+		this.chars = clone(saveFile.data.chars); // Why iterate when it can do it for you!
+		this.foes = clone(saveFile.data.foes);
 		
-		//Load it up!
-		for(var x:int = 0; x < saveFile.data.characters.length; x++) {
-			if(saveFile.data.characters[x].short != "uncreated") {
-				characters[x] = clone(saveFile.data.characters[x]);
-			}
-		}
-		foes = new Array();
-		for(x = 0; x < foes.length; x++) {
-			foes[x] = clone(saveFile.data.foes[x]);
-		}
 		//Load flags
-		flags = cloneDict(saveFile.data.flags);
+		this.flags = new Dictionary()
+		this.flags = cloneDict(saveFile.data.flags);
 		
-		/*
-		for (x = 0; x < 10000; x++) {
-			flags[x] = saveFile.data.flags[x];
-		}
-		*/
 		
 		//Load misc shit
 		this.userInterface.days = saveFile.data.days;
@@ -225,8 +221,6 @@ function loadGame(slot:String):void
 		//Update NPCs that didn't used to exist
 		this.initializeNPCs(true);				
 		
-		//Set pointers back where they belong!
-		this.setCheatPointers();
 		
 		//Update display and such!
 		this.hideNPCStats();
@@ -257,19 +251,6 @@ function postLoadToZeGame():void
 
 
 
-// This is SO MUCH the wrong approach to setting up this sort of thing I can't even express myself properly.
-function setupCharacters():void 
-{
-	for(var count:int = 0; count < 100; count++) {
-		characters[count] = new Creature();
-		//trace("Character #" + count + " initialized.");
-	}
-	foes[0] = new Creature();
-	trace("One foe slot initialized.");
-
-	trace("Setting up the PC")
-	this.pc = new Creature()
-}
 
 function initializeFlags():void 
 {
@@ -279,14 +260,4 @@ function initializeFlags():void
 		flags[x] = undefined;
 	}
 	*/
-}
-
-// arrrrrgh whryyyyy
-function setCheatPointers():void 
-{
-	pc = characters[0];
-	celise = characters[GLOBAL.CELISE];
-	rival = characters[GLOBAL.RIVAL];
-	geoff = characters[GLOBAL.GEOFF];
-	flahne = characters[GLOBAL.FLAHNE];
 }

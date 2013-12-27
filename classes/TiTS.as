@@ -28,6 +28,15 @@
 	import flash.utils.Dictionary;
 	import classes.RoomClass;
 
+	import classes.Characters.*;
+
+	// Items
+	import classes.Items.Protection.*
+	import classes.Items.Guns.*
+	import classes.Items.Melee.*
+	import classes.Items.Apparel.*
+	import classes.Items.Miscellaneous.*
+
 	import classes.Parser.Main.Parser;
 
 	import classes.GUI;
@@ -43,7 +52,6 @@
 		include "../includes/combat.as";
 		include "../includes/celise.as";
 		include "../includes/flahne.as";
-		include "../includes/itemData.as";
 		include "../includes/items.as";
 		include "../includes/penny.as";
 		include "../includes/scrapyard.as";
@@ -60,12 +68,16 @@
 		include "../includes/zilMale.as";
 		include "../includes/zilFemale.as";
 		include "../includes/cuntSnakes.as";
+
+		include "../includes/debug.as";
 	
 		//include "../includes/zilMale.as";
 		
-		public var characters:Array;
+		public var chars:Object;
 		public var foes:Array;
 			
+		/*
+		FUCK THIS SHIT IT'S MAKING EVERYTHING SO MUCH HARDER TO DEBUG
 		public var pc:Creature;
 		public var celise:Creature;
 		public var rival:Creature;
@@ -77,7 +89,7 @@
 		public var burt:Creature;
 		public var zilFemale:Creature;
 		public var cuntsnake:Creature;
-
+		*/
 		// These are all floating around in the TiTS namespace. Really
 		// they should be stored in an item Object() or something
 		// Also, *ideally*, they should all be sub-classes of ItemSlotClass, not instances of ItemSlotClass
@@ -163,9 +175,25 @@
 			registerClassAlias("ItemSlotClass",ItemSlotClass);
 			registerClassAlias("roomClass",RoomClass);
 			registerClassAlias("StorageClass",StorageClass);
+			registerClassAlias("Dictionary",Dictionary);
+
+			// NPCs!
+
+			registerClassAlias("Celise", Celise);
+			registerClassAlias("Flahne", Flahne);
+			registerClassAlias("Penny", Penny);
+			registerClassAlias("ZilFemale", ZilFemale);
+			registerClassAlias("ZilPack", ZilPack);
+			registerClassAlias("Burt", Burt);
+			registerClassAlias("CuntSnake", CuntSnake);
+			registerClassAlias("Geoff", Geoff);
+			registerClassAlias("Rival", Rival);
+			registerClassAlias("ZilMale", ZilMale);
 
 
-			characters = new Array();
+
+
+			chars = new Object();
 			foes = new Array();
 			
 			//What inventory screen is up?
@@ -197,23 +225,6 @@
 			parser = new Parser(this, TiTS_Settings);
 
 
-
-			//Lazy man shortcuts! Need reset after reinitialization of data.
-			//pc = characters[0];
-
-			// CHRIST WHY?
-			pc = characters[0];
-			celise = characters[GLOBAL.CELISE];
-			rival = characters[GLOBAL.RIVAL];
-			geoff = characters[GLOBAL.GEOFF];
-			flahne = characters[GLOBAL.CELISE];
-			zilpack = characters[GLOBAL.ZILPACK];
-			zil = characters[GLOBAL.ZIL];
-			penny = characters[GLOBAL.PENNY];
-			burt = characters[GLOBAL.BURT];
-			zilFemale = characters[GLOBAL.ZILFEMALE];
-			cuntsnake = characters[GLOBAL.CSNAKE];
-
 			flags = new Dictionary();
 			initializeFlags();
 
@@ -224,21 +235,29 @@
 
 
 			// Major class variable setup: ------------------------------------------------------------
-			setupCharacters();
 			initializeRooms();
-			initializeItems();
+
 			
 			// dick about with mapper: ------------------------------------------------------------
 			mapper = new Mapper(this.rooms)
 
 			// set up the user interface: ------------------------------------------------------------
 			this.userInterface.clearMenu();
+			
 			//this.userInterface.addButton(0,"Horsecock",horsecock);
 			this.userInterface.addButton(14,"CLEAR!",clearOutput);
 			//this.userInterface.addButton(16,"2Horse4Me",horsecock);
 
 			setupInputEventHandlers()
 
+
+			//Lazy man shortcuts! Need reset after reinitialization of data.
+			//pc = chars[0];
+
+			this.chars["PC"] = new Creature()
+
+
+			trace("Setting up the PC")
 			
 			this.addFrameScript( 0, mainMenu );
 			//mainMenu();
@@ -272,7 +291,7 @@
 		
 		public function buttonClick(evt:MouseEvent):void {
 			if(!inCombat()) 
-				this.userInterface.showBust(0);
+				this.userInterface.showBust("hide");
 			if(evt.currentTarget.func == undefined) {
 				trace("ERROR: Active button click on " + evt.currentTarget.caption.text + " with no associated public function!");
 				return;
@@ -450,7 +469,7 @@
 				return;
 			}
 			if(!inCombat()) 
-				this.userInterface.showBust(0);
+				this.userInterface.showBust("hide");
 			if(this.userInterface.buttons[arg].arg == undefined) this.userInterface.buttons[arg].func();
 			else this.userInterface.buttons[arg].func(this.userInterface.buttons[arg].arg);
 			updatePCStats();
@@ -598,6 +617,8 @@
 			this.userInterface.addMainMenuButton(3,"Easy Mode:\nOff",toggleEasy);
 			this.userInterface.addMainMenuButton(4,"Debug Mode:\nOff",toggleDebug);
 			this.userInterface.addMainMenuButton(5,"Silly Mode:\nOff",toggleSilly);
+
+			this.userInterface.addButton(10,"Debug",debugPane);
 		}
 
 
@@ -644,6 +665,78 @@
 				this.userInterface.mainMenuButtons[3].caption.text = "Easy Mode:\nOn"
 			}
 		}
+
+
+
+		public function get pc():*
+		{
+			trace("Please stop using this access mechanism. Instead, refer to the PC as `this.chars[\"PC\"]`");
+			return chars["PC"];
+		}
+
+		public function get celise():*
+		{
+			trace("Please stop using this access mechanism. Instead, refer to the PC as `this.chars[\"CELISE\"]`");
+			return chars["CELISE"];
+		}
+
+		public function get rival():*
+		{
+			trace("Please stop using this access mechanism. Instead, refer to the PC as `this.chars[\"RIVAL\"]`");
+			return chars["RIVAL"];
+		}
+
+		public function get geoff():*
+		{
+			trace("Please stop using this access mechanism. Instead, refer to the PC as `this.chars[\"GEOFF\"]`");
+			return chars["GEOFF"];
+		}
+
+		public function get flahne():*
+		{
+			trace("Please stop using this access mechanism. Instead, refer to the PC as `this.chars[\"FLAHNE\"]`");
+			return chars["FLAHNE"];
+		}
+
+		public function get zilpack():*
+		{
+			trace("Please stop using this access mechanism. Instead, refer to the PC as `this.chars[\"ZILPACK\"]`");
+			return chars["ZILPACK"];
+		}
+
+		public function get zil():*
+		{
+			trace("Please stop using this access mechanism. Instead, refer to the PC as `this.chars[\"ZIL\"]`");
+			return chars["ZIL"];
+		}
+
+		public function get penny():*
+		{
+			trace("Please stop using this access mechanism. Instead, refer to the PC as `this.chars[\"PENNY\"]`");
+			return chars["PENNY"];
+		}
+
+		public function get burt():*
+		{
+			trace("Please stop using this access mechanism. Instead, refer to the PC as `this.chars[\"BURT\"]`");
+			return chars["BURT"];
+		}
+
+		public function get zilFemale():*
+		{
+			trace("Please stop using this access mechanism. Instead, refer to the PC as `this.chars[\"ZILFEMALE\"]`");
+			return chars["ZILFEMALE"];
+		}
+
+		public function get cuntsnake():*
+		{
+			trace("Please stop using this access mechanism. Instead, refer to the PC as `this.chars[\"CUNTSNAKE\"]`");
+			return chars["CUNTSNAKE"];
+		}
+
+		
+		
+		
 
 
 
